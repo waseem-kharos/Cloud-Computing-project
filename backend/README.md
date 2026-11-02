@@ -83,13 +83,58 @@ python -m pytest -q
 - Role-based access control
 - Password hashing with bcrypt
 
-## Render demo deployment
+## Free demo deployment (PythonAnywhere + Netlify)
 
-The repository includes a Render Blueprint at `../render.yaml` for the frontend and API.
-In Render, create a new Blueprint from this GitHub repository and apply the configuration.
-Both services use the free plan; the API seeds synthetic demo data on startup.
+This setup avoids card-based hosting plans. PythonAnywhere's free account has strict
+resource limits, and its ASGI hosting is experimental. It is suitable only for a small
+demo, not a production hospital or real patient data.
 
-This demo uses SQLite on an ephemeral filesystem. Data can be lost when the service
-restarts or redeploys, and the free API may sleep when idle. Do not use this deployment
-for real patient data. For persistent production use, configure a paid PostgreSQL database
-and replace the public demo accounts before sharing the app.
+### Backend on PythonAnywhere
+
+1. Create a free Beginner account at https://www.pythonanywhere.com/registration/register/beginner/
+   and note your PythonAnywhere username.
+2. Open a Bash console and run:
+
+   ```bash
+   git clone https://github.com/waseem-kharos/Cloud-Computing-project.git
+   cd Cloud-Computing-project/backend
+   mkvirtualenv mediqueue --python=python3.12
+   pip install -r requirements.txt
+   ```
+
+3. Generate a secret with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+   Create `backend/.env` with the generated value and your username:
+
+   ```dotenv
+   ENVIRONMENT=production
+   SECRET_KEY=replace-with-the-generated-value
+   COOKIE_SECURE=true
+   DATABASE_URL=sqlite:////home/YOUR_USERNAME/Cloud-Computing-project/backend/hospital.db
+   ```
+
+4. Seed the synthetic demo data once:
+
+   ```bash
+   python -m app.seed
+   ```
+
+5. Install the PythonAnywhere command-line tool and create the ASGI site, replacing
+   `YOUR_USERNAME` with your actual username:
+
+   ```bash
+   pip install --upgrade pythonanywhere
+   pa website create --domain YOUR_USERNAME.pythonanywhere.com --command \
+   "cd /home/YOUR_USERNAME/Cloud-Computing-project/backend && /home/YOUR_USERNAME/.virtualenvs/mediqueue/bin/uvicorn --app-dir /home/YOUR_USERNAME/Cloud-Computing-project/backend --uds \${DOMAIN_SOCKET} app.main:app"
+   ```
+
+### Frontend on Netlify
+
+1. Create a free Netlify account and import this GitHub repository.
+2. Before deploying, replace `YOUR_PYTHONANYWHERE_USERNAME` in the root `netlify.toml`
+   with the same PythonAnywhere username.
+3. Netlify reads the build directory and API proxy rules from `netlify.toml`. The proxy
+   keeps API calls and secure login cookies on the frontend's origin.
+
+The SQLite database is stored in the PythonAnywhere account and persists across app
+restarts, but the free plan has a very small daily CPU allowance. Demo accounts use
+public sample passwords; change or disable them before sharing the demo.
