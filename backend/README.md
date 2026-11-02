@@ -82,3 +82,14 @@ python -m pytest -q
 - Rate limiting on sensitive endpoints
 - Role-based access control
 - Password hashing with bcrypt
+
+## Render demo deployment
+
+The repository includes a Render Blueprint at `../render.yaml` for the frontend and API.
+In Render, create a new Blueprint from this GitHub repository and apply the configuration.
+Both services use the free plan; the API seeds synthetic demo data on startup.
+
+This demo uses SQLite on an ephemeral filesystem. Data can be lost when the service
+restarts or redeploys, and the free API may sleep when idle. Do not use this deployment
+for real patient data. For persistent production use, configure a paid PostgreSQL database
+and replace the public demo accounts before sharing the app.
