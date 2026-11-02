@@ -6,6 +6,7 @@ backend/.env
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
+backend/.pytest_cache/
 
 # Node
 frontend/node_modules/
@@ -16,3 +17,7 @@ frontend/.env
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/
